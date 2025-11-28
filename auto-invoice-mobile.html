@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auto Invoice - Blue Soft</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{--blue-1:#e8f3ff;--blue-2:#bcdcff;--text:#0b2447}
+    body{background:linear-gradient(180deg,var(--blue-1),#f7fbff);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial}
+    .card-invoice{background:linear-gradient(180deg,rgba(255,255,255,0.85),rgba(255,255,255,0.9));box-shadow:0 6px 18px rgba(11,36,71,0.08);border-radius:14px}
+    .logo-placeholder{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--blue-2),#d7ecff);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text)}
+    .muted{color:#556280}
+    .product-row input{max-width:100%}
+    @media (max-width:575px){.modal-dialog{max-width:95%}}
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="logo-placeholder">Z</div>
+        <div>
+          <h5 class="mb-0">Zenith Premium Store</h5>
+          <small class="muted">Invoice generator • Blue Soft theme</small>
+        </div>
+      </div>
+      <div>
+        <button id="downloadBtn" class="btn btn-primary">Download Invoice (PNG)</button>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-md-5">
+        <div class="card p-3 card-invoice">
+          <h6>Input Data</h6>
+
+          <div class="mb-2">
+            <label class="form-label small">Nama Pembeli</label>
+            <input id="buyerName" class="form-control" placeholder="Contoh: Budi Santoso">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Kontak (WA/Email)</label>
+            <input id="buyerContact" class="form-control" placeholder="0812xxxx / email@example.com">
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small">Metode Pembayaran</label>
+            <select id="paymentMethod" class="form-select">
+              <option>QRIS</option>
+              <option>GoPay</option>
+              <option>Dana</option>
+              <option>OVO</option>
+              <option>Transfer Bank</option>
+            </select>
+          </div>
+
+          <hr>
+          <h6 class="mb-2">Produk</h6>
+          <div id="productsList"></div>
+          <div class="d-flex gap-2 mt-2">
+            <button id="addProduct" class="btn btn-sm btn-outline-primary">Tambah Produk</button>
+            <button id="clearProducts" class="btn btn-sm btn-outline-danger">Reset</button>
+          </div>
+
+          <hr>
+          <div class="d-flex justify-content-between">
+            <div>
+              <label class="form-label small">Catatan</label>
+              <input id="note" class="form-control" placeholder="Contoh: Aktivasi 1-3 menit">
+            </div>
+          </div>
+
+          <div class="mt-3 d-grid">
+            <button id="generateBtn" class="btn btn-primary">Generate Invoice</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-7">
+        <div id="invoiceCard" class="card p-3 card-invoice">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex gap-3 align-items-center">
+              <div class="logo-placeholder">Z</div>
+              <div>
+                <h5 class="mb-0">Zenith Premium Store</h5>
+                <small class="muted">Invoice Pembelian</small>
+              </div>
+            </div>
+            <div class="text-end muted">
+              <div id="invoiceId">ID: -</div>
+              <div id="invoiceDate">-</div>
+              <div id="invoiceTime">-</div>
+            </div>
+          </div>
+
+          <div class="row mb-2">
+            <div class="col-7">
+              <small class="muted">Nama Pembeli</small>
+              <div id="outBuyer">-</div>
+              <small class="muted">Kontak</small>
+              <div id="outContact">-</div>
+            </div>
+            <div class="col-5 text-end">
+              <small class="muted">Metode Pembayaran</small>
+              <div id="outPayment">-</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-borderless">
+              <thead>
+                <tr>
+                  <th>Produk</th>
+                  <th class="text-end">Durasi</th>
+                  <th class="text-end">Harga</th>
+                </tr>
+              </thead>
+              <tbody id="outProducts">
+                <tr><td colspan="3" class="muted">Belum ada produk</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <div style="min-width:220px">
+              <div class="d-flex justify-content-between muted"><div>Subtotal</div><div id="outSubtotal">-</div></div>
+              <div class="d-flex justify-content-between muted"><div>Diskon</div><div id="outDiscount">0</div></div>
+              <div class="d-flex justify-content-between fw-bold"><div>Total</div><div id="outTotal">-</div></div>
+            </div>
+          </div>
+
+          <hr>
+          <div><small id="outNote" class="muted">Catatan: -</small></div>
+          <div class="mt-2 muted">Simpan invoice ini sebagai bukti pembelian. Garansi aktivasi sesuai ketentuan.</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center text-muted mt-4 small">Made with ❤ • Zenith Premium Store</footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // Helper
+    const fmtRp = v => 'Rp ' + Number(v||0).toLocaleString('id-ID');
+
+    // Product rows management
+    const productsList = document.getElementById('productsList');
+    function newProductRow(name='',duration='',price=''){
+      const id = Date.now()+Math.random().toString(36).slice(2,7);
+      const div = document.createElement('div');
+      div.className='d-flex gap-2 align-items-center mb-2 product-row';
+      div.innerHTML = `
+        <input class="form-control form-control-sm" placeholder="Nama produk" data-field="name" value="${name}">
+        <input class="form-control form-control-sm" placeholder="Durasi (eg: 1 bulan)" data-field="duration" value="${duration}" style="max-width:34%">
+        <input class="form-control form-control-sm" placeholder="Harga" data-field="price" value="${price}" style="max-width:28%">
+        <button class="btn btn-sm btn-outline-danger" data-action="remove">Hapus</button>
+      `;
+      productsList.appendChild(div);
+      div.querySelector('[data-action="remove"]').onclick = ()=>{div.remove();}
+      return div;
+    }
+
+    document.getElementById('addProduct').addEventListener('click',()=>newProductRow());
+    document.getElementById('clearProducts').addEventListener('click',()=>{productsList.innerHTML='';});
+
+    // Generate invoice
+    document.getElementById('generateBtn').addEventListener('click',()=>{
+      const buyer = document.getElementById('buyerName').value||'-';
+      const contact = document.getElementById('buyerContact').value||'-';
+      const payment = document.getElementById('paymentMethod').value||'-';
+      const note = document.getElementById('note').value||'-';
+
+      // products
+      const rows = Array.from(document.querySelectorAll('.product-row'));
+      const products = rows.map(r=>({
+        name: r.querySelector('[data-field="name"]').value||'-',
+        duration: r.querySelector('[data-field="duration"]').value||'-',
+        price: Number((r.querySelector('[data-field="price"]').value||0).toString().replace(/[^0-9]/g,''))||0
+      }));
+
+      // compute
+      const subtotal = products.reduce((s,p)=>s+p.price,0);
+      const discount = 0; // add logic if needed
+      const total = subtotal - discount;
+
+      // fill output
+      document.getElementById('outBuyer').textContent = buyer;
+      document.getElementById('outContact').textContent = contact;
+      document.getElementById('outPayment').textContent = payment;
+
+      const outProducts = document.getElementById('outProducts');
+      outProducts.innerHTML='';
+      if(products.length===0){outProducts.innerHTML='<tr><td colspan="3" class="muted">Belum ada produk</td></tr>'}
+      else{
+        products.forEach(p=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${p.name}</td><td class="text-end">${p.duration}</td><td class="text-end">${fmtRp(p.price)}</td>`;
+          outProducts.appendChild(tr);
+        });
+      }
+
+      document.getElementById('outSubtotal').textContent = fmtRp(subtotal);
+      document.getElementById('outDiscount').textContent = fmtRp(discount);
+      document.getElementById('outTotal').textContent = fmtRp(total);
+
+      // id & timestamp
+      const id = 'ZP-'+Date.now().toString().slice(-8);
+      const now = new Date();
+      document.getElementById('invoiceId').textContent = 'ID: '+id;
+      document.getElementById('invoiceDate').textContent = now.toLocaleDateString('id-ID');
+      document.getElementById('invoiceTime').textContent = now.toLocaleTimeString('id-ID');
+
+      document.getElementById('outNote').textContent = 'Catatan: '+note;
+
+      // save to localStorage (optional simple storage)
+      const saved = JSON.parse(localStorage.getItem('invoices')||'[]');
+      saved.push({id, buyer, contact, payment, products, subtotal, discount, total, note, ts:now.toISOString()});
+      localStorage.setItem('invoices', JSON.stringify(saved));
+
+      // scroll to invoice on mobile
+      document.getElementById('invoiceCard').scrollIntoView({behavior:'smooth'});
+    });
+
+    // download as PNG
+    document.getElementById('downloadBtn').addEventListener('click',()=>{
+      const el = document.getElementById('invoiceCard');
+      html2canvas(el, {scale:2, useCORS:true}).then(canvas=>{
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = (document.getElementById('invoiceId').textContent.replace(/\s/g,'')||'invoice') + '.png';
+        a.click();
+      }).catch(err=>alert('Gagal generate gambar: '+err));
+    });
+
+    // start with one product row sample
+    newProductRow('Contoh Aplikasi Premium','1 Bulan','20000');
+  </script>
+</body>
+</html>
